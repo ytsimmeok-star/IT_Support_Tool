@@ -1,1 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Support – Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f8;--surface:#fff;--accent:#0067C0;--accent-h:#0052a3;--accent-l:#e3f2fd;--border:#e8e8e8;--border2:#d0d0d0;--text:#1a1a1a;--text2:#555;--text3:#888;--red:#d32f2f;--green:#2e7d32;--amber:#e65100;--r:10px}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a1a;--surface:#252525;--border:#333;--border2:#444;--text:#f0f0f0;--text2:#aaa;--text3:#666;--accent-l:#0d2a45}}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
 
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0052a3,#0067C0)}
+.login-box{background:#fff;border-radius:16px;padding:36px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo svg{width:48px;height:48px}
+.login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;color:#1a1a1a}
+.login-sub{font-size:13px;color:#888;text-align:center;margin-bottom:24px}
+.login-box input{width:100%;padding:12px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;margin-bottom:12px;color:#1a1a1a}
+.login-box input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-btn:hover{background:var(--accent-h)}
+.login-err{color:var(--red);font-size:13px;text-align:center;margin-top:8px;display:none}
+
+/* APP */
+.app{display:none;height:100vh;flex-direction:column}
+.app.visible{display:flex}
+.topbar{height:44px;background:var(--accent);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.topbar-title{color:#fff;font-weight:600;font-size:15px;flex:1}
+.topbar-btn{padding:5px 12px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.topbar-btn:hover{background:rgba(255,255,255,.25)}
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:200px;background:var(--surface);border-right:1px solid var(--border);padding:12px 8px;flex-shrink:0;overflow-y:auto}
+.nav{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .1s;user-select:none}
+.nav:hover{background:var(--border);color:var(--text)}
+.nav.active{background:var(--accent-l);color:var(--accent);font-weight:500}
+.nav-ico{width:18px;text-align:center;font-size:15px}
+.sep{height:1px;background:var(--border);margin:6px 0}
+.nav-lbl{font-size:10px;color:var(--text3);padding:5px 10px 2px;text-transform:uppercase;letter-spacing:.6px}
+.badge{background:var(--red);color:#fff;border-radius:10px;font-size:10px;padding:1px 5px;margin-left:auto}
+.main{flex:1;overflow-y:auto;padding:20px}
+.page{display:none}.page.active{display:block}
+.pg-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:16px}
+.stat-val{font-size:28px;font-weight:700;line-height:1}
+.stat-lbl{font-size:12px;color:var(--text3);margin-bottom:6px}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.searchbox{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;flex:1;min-width:160px;max-width:320px}
+.searchbox input{border:none;outline:none;background:transparent;font-size:13px;color:var(--text);width:100%;font-family:inherit}
+.searchbox input::placeholder{color:var(--text3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;font-family:inherit;background:var(--accent);color:#fff;transition:all .1s}
+.btn:hover{background:var(--accent-h)}.btn:disabled{opacity:.5;cursor:default}
+.btn-sec{background:var(--surface);color:var(--text);border-color:var(--border2)}.btn-sec:hover{background:var(--bg)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b71c1c}
+.btn-sm{padding:4px 10px;font-size:12px}
+.tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tab{padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .1s;user-select:none}
+.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.t-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .1s;margin-bottom:8px}
+.t-row:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.t-ico{font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;flex-shrink:0}
+.t-body{flex:1;min-width:0}
+.t-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.prio{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:500;flex-shrink:0}
+.ph{background:#ffebee;color:#c62828}.pm{background:#fff3e0;color:#e65100}.pl{background:#e8f5e9;color:#2e7d32}
+.stag{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:500;flex-shrink:0}
+.so{background:#e3f2fd;color:#1565C0}.sp{background:#fff3e0;color:#e65100}.sc{background:#e8f5e9;color:#2e7d32}
+@media(prefers-color-scheme:dark){.ph{background:#4a1010;color:#ef9a9a}.pm{background:#3a2000;color:#ffcc80}.pl{background:#0d2e0d;color:#a5d6a7}.so{background:#0d2a45;color:#90caf9}.sp{background:#3a2000;color:#ffcc80}.sc{background:#0d2e0d;color:#a5d6a7}}
+.detail-panel{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.detail-header{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.detail-body{padding:16px}
+.info-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border:none}
+.info-k{color:var(--text3);min-width:100px}
+.info-v{color:var(--text);font-weight:500}
+.msg-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;max-height:300px;overflow-y:auto}
+.msg{padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.5}
+.msg-u{background:var(--bg)}.msg-a{background:var(--accent-l)}
+.msg-author{font-size:11px;margin-bottom:3px;font-weight:500}
+.msg-u .msg-author{color:var(--text3)}.msg-a .msg-author{color:var(--accent)}
+.reply-area{margin-top:12px}
+.reply-area textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:80px;background:var(--surface);color:var(--text)}
+.reply-area textarea:focus{border-color:var(--accent)}
+.reply-controls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.form-row{margin-bottom:12px}
+.form-lbl{font-size:12px;color:var(--text2);margin-bottom:4px;display:block}
+.fi,.fs,.fta{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-family:inherit;outline:none;background:var(--surface);color:var(--text);transition:border-color .1s}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--accent)}
+.fta{resize:vertical;min-height:80px}
+.empty{color:var(--text3);padding:20px;text-align:center;font-size:14px}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.notif{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;max-width:300px;animation:slideUp .2s;display:none}
+.notif.show{display:block}
+.notif-t{font-size:13px;font-weight:600}
+.notif-m{font-size:12px;color:var(--text2);margin-top:3px}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.pw-link{font-size:12px;color:var(--accent);cursor:pointer;text-align:center;margin-top:12px;display:block}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg viewBox="0 0 48 48">
+        <rect x="0" y="0" width="22" height="22" rx="4" fill="#0067C0"/>
+        <rect x="26" y="0" width="22" height="22" rx="4" fill="#0052a3"/>
+        <rect x="0" y="26" width="22" height="22" rx="4" fill="#0052a3"/>
+        <rect x="26" y="26" width="22" height="22" rx="4" fill="#0067C0"/>
+      </svg>
+    </div>
+    <div class="login-title">IT Support Admin</div>
+    <div class="login-sub">Melde dich an um fortzufahren</div>
+    <input type="password" id="pw-input" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Anmelden</button>
+    <div class="login-err" id="login-err">Falsches Passwort</div>
+    <span class="pw-link" onclick="toast('Standard-Passwort','admin123')">Passwort vergessen?</span>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app">
+  <div class="topbar">
+    <svg width="22" height="22" viewBox="0 0 22 22"><rect x="0" y="0" width="10" height="10" rx="2" fill="rgba(255,255,255,.9)"/><rect x="12" y="0" width="10" height="10" rx="2" fill="rgba(255,255,255,.7)"/><rect x="0" y="12" width="10" height="10" rx="2" fill="rgba(255,255,255,.7)"/><rect x="12" y="12" width="10" height="10" rx="2" fill="rgba(255,255,255,.9)"/></svg>
+    <div class="topbar-title">IT Support – Admin</div>
+    <span id="tb-clock" style="color:rgba(255,255,255,.7);font-size:12px"></span>
+    <button class="topbar-btn" onclick="window.open('/','_blank')">🔗 Ticket-Link</button>
+    <button class="topbar-btn" onclick="logout()">Abmelden</button>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="nav-lbl">Übersicht</div>
+      <div class="nav active" onclick="go('dash',this)"><span class="nav-ico">🏠</span>Dashboard</div>
+      <div class="nav" onclick="go('tickets',this)"><span class="nav-ico">🎫</span>Tickets<span class="badge" id="badge-open">…</span></div>
+      <div class="sep"></div>
+      <div class="nav-lbl">Einstellungen</div>
+      <div class="nav" onclick="go('settings',this)"><span class="nav-ico">⚙️</span>Einstellungen</div>
+    </div>
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div id="pg-dash" class="page active">
+        <div class="pg-title">Dashboard</div>
+        <div class="pg-sub">Übersicht aller Support-Anfragen</div>
+        <div class="g4">
+          <div class="card"><div class="stat-lbl">Gesamt</div><div class="stat-val" id="s-total">…</div></div>
+          <div class="card"><div class="stat-lbl">Offen</div><div class="stat-val" id="s-offen" style="color:var(--accent)">…</div></div>
+          <div class="card"><div class="stat-lbl">In Bearbeitung</div><div class="stat-val" id="s-bearb" style="color:var(--amber)">…</div></div>
+          <div class="card"><div class="stat-lbl">Gelöst</div><div class="stat-val" id="s-gel" style="color:var(--green)">…</div></div>
+        </div>
+        <div class="sec-title" style="font-size:15px;font-weight:600;margin-bottom:12px">Neueste Tickets</div>
+        <div id="dash-tickets"></div>
+      </div>
+
+      <!-- TICKETS -->
+      <div id="pg-tickets" class="page">
+        <div class="pg-title">Alle Tickets</div>
+        <div class="pg-sub">Klicke auf ein Ticket um es zu bearbeiten und zu antworten</div>
+        <div class="toolbar">
+          <div class="searchbox"><span>🔍</span><input id="t-search" placeholder="Suchen…" oninput="renderTickets()"></div>
+          <button class="btn btn-sec" onclick="loadAll()">⟳ Aktualisieren</button>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active" onclick="setTF('',this)">Alle</div>
+          <div class="tab" onclick="setTF('Offen',this)">Offen</div>
+          <div class="tab" onclick="setTF('In Bearbeitung',this)">In Bearbeitung</div>
+          <div class="tab" onclick="setTF('Gelöst',this)">Gelöst</div>
+        </div>
+        <div id="ticket-list"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="pg-settings" class="page">
+        <div class="pg-title">Einstellungen</div>
+        <div class="pg-sub">Admin-Passwort ändern</div>
+        <div class="card" style="max-width:400px">
+          <div style="font-size:15px;font-weight:600;margin-bottom:14px">Passwort ändern</div>
+          <div class="form-row"><label class="form-lbl">Altes Passwort</label><input class="fi" type="password" id="pw-old"></div>
+          <div class="form-row"><label class="form-lbl">Neues Passwort</label><input class="fi" type="password" id="pw-new"></div>
+          <div class="form-row"><label class="form-lbl">Bestätigen</label><input class="fi" type="password" id="pw-new2"></div>
+          <button class="btn" onclick="changePW()">Passwort speichern</button>
+        </div>
+        <div class="card" style="max-width:400px;margin-top:16px">
+          <div style="font-size:15px;font-weight:600;margin-bottom:14px">Ticket-Link teilen</div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Teile diesen Link mit Freunden damit sie Tickets erstellen können:</p>
+          <div style="display:flex;gap:8px">
+            <input class="fi" id="share-url" readonly style="background:var(--bg)">
+            <button class="btn btn-sec" onclick="copyLink()">Kopieren</button>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px">Beim Öffnen auf Railway/Render wird hier die echte URL angezeigt</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="modal-bg" id="detail-modal">
+  <div class="modal">
+    <div class="modal-title" id="detail-title">Ticket Details</div>
+    <div id="detail-content"></div>
+    <div class="modal-foot">
+      <button class="btn btn-danger btn-sm" id="detail-del-btn">Löschen</button>
+      <button class="btn btn-sec" onclick="closeModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<div id="notif" class="notif"><div id="n-t" class="notif-t"></div><div id="n-m" class="notif-m"></div></div>
+
+<script>
+let allTickets = [], ticketFilter = '', currentTicketId = null;
+
+// ── Auth ──
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  try {
+    const r = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    if (r.ok) {
+      sessionStorage.setItem('auth','1');
+      showApp();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+      setTimeout(()=>document.getElementById('login-err').style.display='none', 3000);
+    }
+  } catch { toast('Fehler','Server nicht erreichbar'); }
+}
+function logout() { sessionStorage.removeItem('auth'); location.reload(); }
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('share-url').value = window.location.origin + '/';
+  loadAll();
+  tick();
+  setInterval(tick, 30000);
+  setInterval(loadAll, 60000);
+}
+if (sessionStorage.getItem('auth')) showApp();
+
+// ── Clock ──
+function tick() {
+  const n = new Date();
+  document.getElementById('tb-clock').textContent = n.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Nav ──
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ── Load Data ──
+async function loadAll() {
+  try {
+    const [tr, sr] = await Promise.all([fetch('/api/admin/tickets'), fetch('/api/admin/stats')]);
+    allTickets = await tr.json();
+    const stats = await sr.json();
+    document.getElementById('s-total').textContent = stats.total;
+    document.getElementById('s-offen').textContent = stats.offen;
+    document.getElementById('s-bearb').textContent = stats.bearbeitung;
+    document.getElementById('s-gel').textContent = stats.geloest;
+    document.getElementById('badge-open').textContent = stats.offen;
+    renderTickets();
+    renderDash();
+  } catch { toast('Fehler','Daten konnten nicht geladen werden'); }
+}
+
+function renderDash() {
+  const recent = allTickets.slice(0,5);
+  document.getElementById('dash-tickets').innerHTML = recent.length
+    ? recent.map(t => ticketRow(t, true)).join('')
+    : '<div class="empty">Noch keine Tickets 🎉</div>';
+}
+
+function renderTickets() {
+  const q = (document.getElementById('t-search')?.value||'').toLowerCase();
+  const list = allTickets.filter(t =>
+    (!ticketFilter || t.status === ticketFilter) &&
+    (!q || t.title.toLowerCase().includes(q) || (t.name||'').toLowerCase().includes(q) || String(t.id).includes(q))
+  );
+  document.getElementById('ticket-list').innerHTML = list.length
+    ? list.map(t => ticketRow(t, false)).join('')
+    : '<div class="empty">Keine Tickets gefunden</div>';
+}
+
+function ticketRow(t, compact) {
+  const cats = {Hardware:'🖥️',Software:'💾',Netzwerk:'📶',Passwort:'🔐',Drucker:'🖨️',Sonstiges:'💬'};
+  return `<div class="t-row" onclick="openDetail(${t.id})">
+    <div class="t-ico">${cats[t.category]||'💬'}</div>
+    <div class="t-body">
+      <div class="t-title">#${t.id} ${esc(t.title)}</div>
+      <div class="t-meta">${esc(t.name||'–')} ${t.email?'· '+esc(t.email):''} · ${fmtDate(t.created)}</div>
+    </div>
+    <span class="prio ${prioCls(t.priority)}">${esc(t.priority)}</span>
+    <span class="stag ${statusCls(t.status)}">${esc(t.status)}</span>
+  </div>`;
+}
+
+function setTF(f, el) {
+  ticketFilter = f;
+  document.querySelectorAll('.tab-bar .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTickets();
+}
+
+// ── Detail ──
+async function openDetail(id) {
+  currentTicketId = id;
+  const r = await fetch('/api/admin/tickets/' + id);
+  const t = await r.json();
+  document.getElementById('detail-title').textContent = '#' + id + ' – ' + t.title;
+  document.getElementById('detail-del-btn').onclick = () => deleteTicket(id);
+
+  const msgs = (t.messages||[]).map(m => `
+    <div class="msg ${m.is_admin?'msg-a':'msg-u'}">
+      <div class="msg-author">${esc(m.author)} · ${fmtDate(m.created)}</div>
+      <div>${esc(m.text)}</div>
+    </div>`).join('');
+
+  document.getElementById('detail-content').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <select class="fs" id="d-status" style="width:auto;padding:5px 10px;font-size:13px">
+        <option ${t.status==='Offen'?'selected':''}>Offen</option>
+        <option ${t.status==='In Bearbeitung'?'selected':''}>In Bearbeitung</option>
+        <option ${t.status==='Gelöst'?'selected':''}>Gelöst</option>
+      </select>
+      <select class="fs" id="d-prio" style="width:auto;padding:5px 10px;font-size:13px">
+        <option ${t.priority==='Niedrig'?'selected':''}>Niedrig</option>
+        <option ${t.priority==='Mittel'?'selected':''}>Mittel</option>
+        <option ${t.priority==='Hoch'?'selected':''}>Hoch</option>
+      </select>
+    </div>
+    <div class="info-row"><span class="info-k">Von</span><span class="info-v">${esc(t.name)}</span></div>
+    <div class="info-row"><span class="info-k">E-Mail</span><span class="info-v">${esc(t.email||'–')}</span></div>
+    <div class="info-row"><span class="info-k">Gerät</span><span class="info-v">${esc(t.device||'–')}</span></div>
+    <div class="info-row"><span class="info-k">Kategorie</span><span class="info-v">${esc(t.category)}</span></div>
+    <div class="info-row"><span class="info-k">Erstellt</span><span class="info-v">${fmtDate(t.created)}</span></div>
+    ${t.description ? `<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:7px;font-size:13px;line-height:1.6">${esc(t.description)}</div>` : ''}
+    <div class="msg-list">${msgs || '<div style="color:var(--text3);font-size:12px;padding:8px">Keine Nachrichten</div>'}</div>
+    <div class="reply-area">
+      <textarea id="reply-text" placeholder="Antwort an den Benutzer schreiben…"></textarea>
+      <div class="reply-controls">
+        <button class="btn" onclick="sendAdminReply(${id})">✉️ Antwort senden</button>
+        <button class="btn btn-sec" onclick="saveStatus(${id})">Status speichern</button>
+      </div>
+    </div>`;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+async function sendAdminReply(id) {
+  const text = document.getElementById('reply-text').value.trim();
+  const status = document.getElementById('d-status').value;
+  if (!text) { toast('Hinweis','Bitte eine Antwort eingeben.'); return; }
+  await fetch('/api/admin/reply', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ticket_id: id, text, status})
+  });
+  toast('Gesendet','Antwort wurde gespeichert.');
+  closeModal();
+  loadAll();
+}
+
+async function saveStatus(id) {
+  const status = document.getElementById('d-status').value;
+  const priority = document.getElementById('d-prio').value;
+  await fetch('/api/admin/tickets/' + id, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({status, priority})
+  });
+  toast('Gespeichert','Status wurde aktualisiert.');
+  closeModal();
+  loadAll();
+}
+
+async function deleteTicket(id) {
+  if (!confirm('Ticket #' + id + ' wirklich löschen?')) return;
+  await fetch('/api/admin/tickets/' + id, {method:'DELETE'});
+  toast('Gelöscht','Ticket #' + id + ' wurde entfernt.');
+  closeModal();
+  loadAll();
+}
+
+function closeModal() { document.getElementById('detail-modal').classList.remove('show'); }
+document.getElementById('detail-modal').addEventListener('click', e => { if(e.target.id==='detail-modal') closeModal(); });
+
+// ── Settings ──
+async function changePW() {
+  const o = document.getElementById('pw-old').value;
+  const n = document.getElementById('pw-new').value;
+  const n2 = document.getElementById('pw-new2').value;
+  if (!o || !n) { toast('Fehler','Alle Felder ausfüllen'); return; }
+  if (n !== n2) { toast('Fehler','Passwörter stimmen nicht überein'); return; }
+  const r = await fetch('/api/admin/password', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({old:o, new:n})
+  });
+  if (r.ok) { toast('Gespeichert','Passwort wurde geändert.'); ['pw-old','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value=''); }
+  else { toast('Fehler','Altes Passwort falsch.'); }
+}
+
+function copyLink() {
+  const url = document.getElementById('share-url').value;
+  navigator.clipboard.writeText(url).then(()=>toast('Kopiert!','Link ist in der Zwischenablage.'));
+}
+
+// ── Helpers ──
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtDate(iso){
+  if(!iso)return'';
+  try{return new Date(iso).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+  catch{return iso.substring(0,16).replace('T',' ')}
+}
+function prioCls(p){return{Hoch:'ph',Mittel:'pm',Niedrig:'pl'}[p]||'pm'}
+function statusCls(s){return{Offen:'so','In Bearbeitung':'sp',Gelöst:'sc'}[s]||'so'}
+let nT;
+function toast(t,m){
+  document.getElementById('n-t').textContent=t;
+  document.getElementById('n-m').textContent=m;
+  const n=document.getElementById('notif');n.classList.add('show');
+  clearTimeout(nT);nT=setTimeout(()=>n.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
