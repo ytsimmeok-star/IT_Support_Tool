@@ -5,6 +5,7 @@ import sqlite3, datetime, os, hashlib
 app = Flask(__name__, static_folder='static')
 CORS(app)
 DB = 'data.db'
+init_db()
 
 # ── DB Init ──────────────────────────────────────
 def init_db():
