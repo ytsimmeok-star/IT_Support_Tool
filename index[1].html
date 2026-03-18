@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>IT Support – Ticket erstellen</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#0067C0;--accent-h:#0052a3;--bg:#f0f4f8;--surface:#fff;--text:#1a1a1a;--text2:#555;--text3:#888;--border:#e0e0e0;--red:#d32f2f;--green:#2e7d32;--r:12px}
+body{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+.header{background:var(--accent);padding:20px 24px 24px;color:#fff}
+.header-top{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.logo{width:32px;height:32px}
+.app-name{font-size:18px;font-weight:600}
+.header-sub{font-size:13px;opacity:.8;margin-top:2px}
+.tabs{display:flex;background:rgba(0,0,0,.15);border-radius:8px;padding:3px;margin-top:16px;gap:2px}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);border-radius:6px;cursor:pointer;transition:all .15s;user-select:none}
+.tab.active{background:#fff;color:var(--accent)}
+.content{padding:20px;max-width:600px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+.card{background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:0 1px 8px rgba(0,0,0,.08);margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.form-row{margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;font-weight:500}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;outline:none;color:var(--text);background:#fff;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:100px;line-height:1.5}
+.required{color:var(--red)}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-h)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:default}
+.btn-sec{background:#f0f0f0;color:var(--text);margin-top:8px}
+.success-box{text-align:center;padding:32px 20px}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px}
+.success-msg{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.ticket-id-box{background:#e8f5e9;border:2px solid var(--green);border-radius:10px;padding:16px;margin:16px 0}
+.ticket-id-label{font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px}
+.ticket-id-val{font-size:28px;font-weight:700;color:var(--green);letter-spacing:2px}
+.track-result{background:var(--surface);border-radius:var(--r);padding:20px;margin-top:16px;display:none}
+.status-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600}
+.s-offen{background:#e3f2fd;color:#1565C0}
+.s-bearbeitung{background:#fff3e0;color:#e65100}
+.s-geloest{background:#e8f5e9;color:#2e7d32}
+.msg-list{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.msg{padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.5}
+.msg-user{background:#f5f5f5;border-bottom-left-radius:3px}
+.msg-admin{background:#e3f2fd;border-bottom-right-radius:3px;text-align:right}
+.msg-admin .msg-author{color:#1565C0;font-weight:600;font-size:12px;margin-bottom:4px}
+.msg-user .msg-author{color:var(--text3);font-size:12px;margin-bottom:4px}
+.msg-text{color:var(--text)}
+.reply-box{margin-top:12px}
+.reply-box textarea{font-size:14px}
+.info-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.info-row:last-child{border:none}
+.info-key{color:var(--text3);min-width:100px}
+.info-val{color:var(--text);font-weight:500}
+.prio-h{color:#c62828;font-weight:600}
+.prio-m{color:#e65100;font-weight:600}
+.prio-l{color:#2e7d32;font-weight:600}
+.error-msg{color:var(--red);font-size:13px;margin-top:6px;display:none}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{font-size:12px;color:var(--text3);margin-top:5px}
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.cat-btn{padding:12px 8px;border:2px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;background:#fff;user-select:none}
+.cat-btn.selected{border-color:var(--accent);background:#e3f2fd;color:var(--accent)}
+.cat-icon{font-size:20px;display:block;margin-bottom:4px}
+.step-indicator{display:flex;gap:8px;margin-bottom:20px}
+.step{height:4px;border-radius:2px;flex:1;background:#e0e0e0;transition:background .3s}
+.step.done{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <svg class="logo" viewBox="0 0 32 32">
+      <rect x="0" y="0" width="15" height="15" rx="3" fill="rgba(255,255,255,0.9)"/>
+      <rect x="17" y="0" width="15" height="15" rx="3" fill="rgba(255,255,255,0.7)"/>
+      <rect x="0" y="17" width="15" height="15" rx="3" fill="rgba(255,255,255,0.7)"/>
+      <rect x="17" y="17" width="15" height="15" rx="3" fill="rgba(255,255,255,0.9)"/>
+    </svg>
+    <span class="app-name" id="company-name">IT Support</span>
+  </div>
+  <div class="header-sub">Wie können wir dir helfen?</div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('new')">Neues Ticket</div>
+    <div class="tab" onclick="showTab('track')">Ticket verfolgen</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- NEU -->
+  <div id="pg-new" class="page active">
+    <div id="form-view">
+      <div id="step-dots" class="step-indicator">
+        <div class="step done" id="s1"></div>
+        <div class="step" id="s2"></div>
+        <div class="step" id="s3"></div>
+      </div>
+
+      <!-- Schritt 1: Kategorie -->
+      <div id="step1" class="card">
+        <div class="card-title">Was ist das Problem?</div>
+        <div class="cat-grid">
+          <div class="cat-btn" onclick="selectCat(this,'Hardware')"><span class="cat-icon">🖥️</span>Hardware</div>
+          <div class="cat-btn" onclick="selectCat(this,'Software')"><span class="cat-icon">💾</span>Software</div>
+          <div class="cat-btn" onclick="selectCat(this,'Netzwerk')"><span class="cat-icon">📶</span>Netzwerk / WLAN</div>
+          <div class="cat-btn" onclick="selectCat(this,'Passwort')"><span class="cat-icon">🔐</span>Passwort</div>
+          <div class="cat-btn" onclick="selectCat(this,'Drucker')"><span class="cat-icon">🖨️</span>Drucker</div>
+          <div class="cat-btn" onclick="selectCat(this,'Sonstiges')"><span class="cat-icon">💬</span>Sonstiges</div>
+        </div>
+        <button class="btn btn-primary" onclick="goStep(2)" id="s1-next" disabled>Weiter →</button>
+      </div>
+
+      <!-- Schritt 2: Details -->
+      <div id="step2" class="card" style="display:none">
+        <div class="card-title">Beschreibe das Problem</div>
+        <div class="form-row">
+          <label>Kurze Zusammenfassung <span class="required">*</span></label>
+          <input type="text" id="f-title" placeholder="z.B. Drucker druckt nicht mehr" maxlength="100">
+        </div>
+        <div class="form-row">
+          <label>Gerät (Modell / Computername)</label>
+          <input type="text" id="f-device" placeholder="z.B. MacBook Pro, PC-Büro-1">
+        </div>
+        <div class="form-row">
+          <label>Beschreibung <span class="required">*</span></label>
+          <textarea id="f-desc" placeholder="Beschreibe das Problem so genau wie möglich. Was hast du bereits versucht?"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Dringlichkeit</label>
+          <select id="f-prio">
+            <option value="Niedrig">🟢 Niedrig – nicht eilig</option>
+            <option value="Mittel" selected>🟡 Mittel – bald lösen</option>
+            <option value="Hoch">🔴 Hoch – dringend</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="goStep(3)">Weiter →</button>
+        <button class="btn btn-sec" onclick="goStep(1)">← Zurück</button>
+      </div>
+
+      <!-- Schritt 3: Kontakt -->
+      <div id="step3" class="card" style="display:none">
+        <div class="card-title">Deine Kontaktdaten</div>
+        <div class="form-row">
+          <label>Dein Name <span class="required">*</span></label>
+          <input type="text" id="f-name" placeholder="Vor- und Nachname">
+        </div>
+        <div class="form-row">
+          <label>E-Mail-Adresse (optional)</label>
+          <input type="email" id="f-email" placeholder="für Benachrichtigungen">
+          <div class="hint">Mit deiner E-Mail kannst du den Ticketstatus verfolgen</div>
+        </div>
+        <div id="submit-error" class="error-msg">Bitte alle Pflichtfelder ausfüllen.</div>
+        <button class="btn btn-primary" onclick="submitTicket()" id="submit-btn">✅ Ticket absenden</button>
+        <button class="btn btn-sec" onclick="goStep(2)">← Zurück</button>
+      </div>
+    </div>
+
+    <!-- Erfolg -->
+    <div id="success-view" style="display:none">
+      <div class="card success-box">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Ticket eingereicht!</div>
+        <div class="success-msg">Dein Ticket wurde erfolgreich erstellt. Wir kümmern uns darum!</div>
+        <div class="ticket-id-box">
+          <div class="ticket-id-label">DEINE TICKET-NUMMER</div>
+          <div class="ticket-id-val" id="success-id">#000</div>
+          <div style="font-size:12px;color:var(--green);margin-top:4px">Speichere diese Nummer, um dein Ticket zu verfolgen</div>
+        </div>
+        <button class="btn btn-primary" onclick="trackFromSuccess()">Ticket verfolgen</button>
+        <button class="btn btn-sec" onclick="resetForm()">Neues Ticket</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERFOLGEN -->
+  <div id="pg-track" class="page">
+    <div class="card">
+      <div class="card-title">Ticket-Status prüfen</div>
+      <div class="form-row">
+        <label>Ticket-Nummer</label>
+        <input type="number" id="track-id" placeholder="z.B. 42" min="1">
+      </div>
+      <div class="form-row">
+        <label>E-Mail (falls angegeben)</label>
+        <input type="email" id="track-email" placeholder="optional zur Verifikation">
+      </div>
+      <button class="btn btn-primary" onclick="trackTicket()" id="track-btn">🔍 Ticket suchen</button>
+    </div>
+    <div id="track-result" class="track-result card">
+      <div id="track-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let selectedCat = '';
+let createdTicketId = null;
+
+function showTab(t) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(tb => tb.classList.remove('active'));
+  document.getElementById('pg-' + t).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function selectCat(el, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCat = cat;
+  document.getElementById('s1-next').disabled = false;
+}
+
+function goStep(n) {
+  if (n === 2) {
+    const t = document.getElementById('f-title').value;
+    const d = document.getElementById('f-desc').value;
+    if (n === 3 && (!t || !d)) return;
+  }
+  if (n === 3) {
+    const t = document.getElementById('f-title').value.trim();
+    const d = document.getElementById('f-desc').value.trim();
+    if (!t || !d) { alert('Bitte Zusammenfassung und Beschreibung ausfüllen.'); return; }
+  }
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).style.display = i === n ? 'block' : 'none';
+    const s = document.getElementById('s'+i);
+    if (s) s.className = 'step' + (i <= n ? ' done' : '');
+  });
+}
+
+async function submitTicket() {
+  const name = document.getElementById('f-name').value.trim();
+  const title = document.getElementById('f-title').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  if (!name || !title || !desc) {
+    document.getElementById('submit-error').style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">⟳</span> Wird gesendet…';
+  try {
+    const r = await fetch('/api/tickets', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        title, name,
+        email: document.getElementById('f-email').value.trim(),
+        device: document.getElementById('f-device').value.trim(),
+        category: selectedCat || 'Sonstiges',
+        priority: document.getElementById('f-prio').value,
+        description: desc
+      })
+    });
+    const data = await r.json();
+    if (data.id) {
+      createdTicketId = data.id;
+      document.getElementById('success-id').textContent = '#' + data.id;
+      document.getElementById('form-view').style.display = 'none';
+      document.getElementById('success-view').style.display = 'block';
+    } else {
+      alert('Fehler: ' + (data.error || 'Unbekannt'));
+    }
+  } catch { alert('Verbindungsfehler. Bitte erneut versuchen.'); }
+  btn.disabled = false;
+  btn.textContent = '✅ Ticket absenden';
+}
+
+function trackFromSuccess() {
+  document.getElementById('track-id').value = createdTicketId;
+  showTab('track');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.querySelectorAll('.tab')[0].classList.remove('active');
+  trackTicket();
+}
+
+function resetForm() {
+  document.getElementById('form-view').style.display = 'block';
+  document.getElementById('success-view').style.display = 'none';
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  selectedCat = '';
+  ['f-title','f-name','f-email','f-device','f-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('s1-next').disabled = true;
+  goStep(1);
+}
+
+async function trackTicket() {
+  const id = document.getElementById('track-id').value;
+  const email = document.getElementById('track-email').value;
+  if (!id) { alert('Bitte Ticket-Nummer eingeben.'); return; }
+  const btn = document.getElementById('track-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Suche…';
+  try {
+    const url = `/api/tickets/track?id=${id}${email ? '&email=' + encodeURIComponent(email) : ''}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (data.error) { alert(data.error); }
+    else { renderTrackResult(data); }
+  } catch { alert('Verbindungsfehler.'); }
+  btn.disabled = false; btn.textContent = '🔍 Ticket suchen';
+}
+
+function renderTrackResult(t) {
+  const statusCls = {'Offen':'s-offen','In Bearbeitung':'s-bearbeitung','Gelöst':'s-geloest'}[t.status] || 's-offen';
+  const prioCls = {'Hoch':'prio-h','Mittel':'prio-m','Niedrig':'prio-l'}[t.priority] || 'prio-m';
+  const msgs = (t.messages || []).map(m => `
+    <div class="msg ${m.is_admin ? 'msg-admin' : 'msg-user'}">
+      <div class="msg-author">${esc(m.author)} · ${fmtDate(m.created)}</div>
+      <div class="msg-text">${esc(m.text)}</div>
+    </div>`).join('');
+  document.getElementById('track-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:13px;color:var(--text3)">Ticket #${t.id}</div>
+        <div style="font-size:17px;font-weight:600;margin-top:2px">${esc(t.title)}</div>
+      </div>
+      <span class="status-badge ${statusCls}">${esc(t.status)}</span>
+    </div>
+    <div class="info-row"><span class="info-key">Von</span><span class="info-val">${esc(t.name)}</span></div>
+    <div class="info-row"><span class="info-key">Kategorie</span><span class="info-val">${esc(t.category)}</span></div>
+    <div class="info-row"><span class="info-key">Priorität</span><span class="info-val ${prioCls}">${esc(t.priority)}</span></div>
+    <div class="info-row"><span class="info-key">Erstellt</span><span class="info-val">${fmtDate(t.created)}</span></div>
+    ${t.description ? `<div style="margin-top:12px;padding:12px;background:#f9f9f9;border-radius:8px;font-size:14px;color:var(--text2);line-height:1.5">${esc(t.description)}</div>` : ''}
+    ${msgs ? `<div class="msg-list">${msgs}</div>` : ''}
+    ${t.status !== 'Gelöst' ? `
+    <div class="reply-box" style="margin-top:14px">
+      <textarea id="reply-text" placeholder="Antwort schreiben oder weitere Infos hinzufügen…" style="font-size:14px;min-height:80px"></textarea>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="sendReply(${t.id},'${esc(t.name)}')">Antwort senden</button>
+    </div>` : ''}`;
+  document.getElementById('track-result').style.display = 'block';
+}
+
+async function sendReply(tid, author) {
+  const text = document.getElementById('reply-text').value.trim();
+  if (!text) return;
+  await fetch('/api/tickets/reply', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ticket_id: tid, author, text})
+  });
+  document.getElementById('reply-text').value = '';
+  trackTicket();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch { return iso.substring(0,16).replace('T',' '); }
+}
+
+// Load company name
+fetch('/api/admin/stats').catch(()=>{});
+</script>
+</body>
+</html>
