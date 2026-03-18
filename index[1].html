@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Support Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f3f3f3;--surface:#fff;--surface2:#f9f9f9;
+    --accent:#0067C0;--accent-h:#1975CE;--accent-l:#CCE4FF;
+    --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+    --text:#1a1a1a;--text2:#5a5a5a;--text3:#8a8a8a;
+    --red:#C42B1C;--green:#107C10;--amber:#9D5D00;
+    --r:8px;--sw:220px;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#202020;--surface:#2c2c2c;--surface2:#383838;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+    --text:#f0f0f0;--text2:#b0b0b0;--text3:#707070;--accent-l:#003A6B;
+  }}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:'Segoe UI',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+  .taskbar{height:44px;background:rgba(25,25,25,0.95);display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+  .tb-left{display:flex;align-items:center;gap:10px}
+  .tb-logo{display:flex;align-items:center;gap:8px}
+  .tb-title{color:#fff;font-size:13px;opacity:.9}
+  .tb-right{display:flex;align-items:center;gap:16px;color:#fff;font-size:12px;opacity:.8}
+  .tb-time{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3}
+  .conn-dot{width:7px;height:7px;border-radius:50%;background:#F7B900;display:inline-block;margin-right:4px;transition:background .3s}
+  .conn-dot.ok{background:#4ec94e}
+  .conn-dot.err{background:var(--red)}
+  .app{display:flex;height:calc(100vh - 44px)}
+  .sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px 8px;gap:2px;flex-shrink:0;overflow-y:auto}
+  .sb-head{display:flex;align-items:center;gap:8px;padding:8px 10px 16px;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .sb-av{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;flex-shrink:0}
+  .sb-user-name{font-size:13px;font-weight:500;color:var(--text)}
+  .sb-user-role{font-size:11px;color:var(--text3)}
+  .nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;transition:background .1s,color .1s;user-select:none}
+  .nav:hover{background:var(--border);color:var(--text)}
+  .nav.active{background:var(--accent-l);color:var(--accent);font-weight:500}
+  .nav-ico{font-size:16px;width:20px;text-align:center}
+  .sep{height:1px;background:var(--border);margin:6px 0}
+  .nav-lbl{font-size:11px;color:var(--text3);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:.6px}
+  .badge{background:var(--accent);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:auto}
+  .badge.r{background:var(--red)}
+  .main{flex:1;overflow-y:auto;padding:24px;background:var(--bg)}
+  .page{display:none}.page.active{display:block}
+  .pg-title{font-size:22px;font-weight:600;margin-bottom:6px}
+  .pg-sub{font-size:13px;color:var(--text3);margin-bottom:24px}
+  .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:20px}
+  .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+  .g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+  @media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g2{grid-template-columns:1fr}}
+  .card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .card-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px}
+  .stat-val{font-size:28px;font-weight:600;line-height:1}
+  .stat-sub{font-size:12px;color:var(--text3);margin-top:4px}
+  .pb{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px}
+  .pb-fill{height:100%;border-radius:3px;transition:width .5s}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:400;cursor:pointer;border:1px solid transparent;transition:all .1s;font-family:inherit;background:var(--accent);color:#fff}
+  .btn:hover{background:var(--accent-h)}.btn:disabled{opacity:.5;cursor:default}
+  .btn.sec{background:var(--surface);color:var(--text);border-color:var(--border2)}.btn.sec:hover{background:var(--bg)}
+  .btn.danger{background:var(--red)}.btn.danger:hover{background:#a52318}
+  .btn.sm{padding:4px 10px;font-size:12px}
+  .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .sec-title{font-size:15px;font-weight:600}
+  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .searchbox{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;flex:1;min-width:160px;max-width:320px}
+  .searchbox input{border:none;outline:none;background:transparent;font-size:13px;color:var(--text);width:100%;font-family:inherit}
+  .searchbox input::placeholder{color:var(--text3)}
+  .ticket-list{display:flex;flex-direction:column;gap:8px}
+  .ticket{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;transition:border-color .1s,box-shadow .1s}
+  .ticket:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.07)}
+  .t-ico{font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;flex-shrink:0}
+  .t-body{flex:1;min-width:0}
+  .t-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-meta{font-size:11px;color:var(--text3);margin-top:2px}
+  .prio{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:500;flex-shrink:0}
+  .ph{background:#FDECE9;color:#C42B1C}.pm{background:#FFF4D6;color:#9D5D00}.pl{background:#E9F5E9;color:#107C10}.pc{background:#3d0000;color:#ff8080}
+  .stag{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:500;flex-shrink:0}
+  .so{background:#E6F1FF;color:#0067C0}.sp{background:#FFF4D6;color:#9D5D00}.sc{background:#E9F5E9;color:#107C10}
+  @media(prefers-color-scheme:dark){
+    .ph{background:#4a1a17;color:#F87171}.pm{background:#3a2800;color:#FCD34D}.pl{background:#0f2e0f;color:#6EE7B7}
+    .so{background:#002c5a;color:#60A5FA}.sp{background:#3a2800;color:#FCD34D}.sc{background:#0f2e0f;color:#6EE7B7}
+  }
+  .cmd{background:#1e1e1e;border-radius:8px;padding:14px 16px;font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:#d4d4d4;max-height:240px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+  .c-prompt{color:#569CD6}.c-ok{color:#4EC9B0}.c-err{color:#F44747}.c-out{color:#9CDCFE}
+  .tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px}
+  .tab{padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .1s;user-select:none}
+  .tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+  .form-row{margin-bottom:14px}
+  .form-lbl{font-size:13px;color:var(--text2);margin-bottom:5px;display:block}
+  .fi,.fs,.fta{width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .1s}
+  .fi:focus,.fs:focus,.fta:focus{border-color:var(--accent)}
+  .fta{resize:vertical;min-height:80px}
+  .user-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .user-row:last-child{border-bottom:none}
+  .u-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+  .u-info{flex:1;min-width:0}
+  .u-name{font-size:13px;font-weight:500}
+  .u-sub{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .u-acts{display:flex;gap:6px}
+  .ico-btn{width:28px;height:28px;border-radius:5px;border:1px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);transition:background .1s}
+  .ico-btn:hover{background:var(--bg)}
+  .kb-item{padding:12px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);transition:box-shadow .1s,border-color .1s;margin-bottom:8px}
+  .kb-item:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.07)}
+  .kb-tag{font-size:10px;padding:2px 7px;background:var(--accent-l);color:var(--accent);border-radius:10px;margin-left:6px}
+  .alert-item{display:flex;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:8px;border:1px solid}
+  .a-err{background:#FDECE9;border-color:#F9B4AB}.a-warn{background:#FFF4D6;border-color:#F9CF7F}
+  .a-info{background:#E6F1FF;border-color:#9FCBF5}.a-ok{background:#E9F5E9;border-color:#9FD89F}
+  @media(prefers-color-scheme:dark){
+    .a-err{background:#4a1a17;border-color:#7a2a27}.a-warn{background:#3a2800;border-color:#6a4800}
+    .a-info{background:#002c5a;border-color:#004080}.a-ok{background:#0f2e0f;border-color:#1a4e1a}
+  }
+  .a-ico{font-size:16px;margin-top:1px}
+  .a-title{font-size:13px;font-weight:500}
+  .a-msg{font-size:12px;color:var(--text2);margin-top:2px}
+  .dev-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .dev-item:last-child{border-bottom:none}
+  .dev-ic{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:8px;flex-shrink:0}
+  .dev-info{flex:1;min-width:0}
+  .dev-name{font-size:13px;font-weight:500}
+  .dev-sub{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot-on{background:var(--green)}.dot-off{background:var(--text3)}.dot-warn{background:#F7B900}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--surface);border-radius:12px;padding:24px;width:500px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.25)}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:16px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .notif{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;max-width:320px;animation:slideUp .2s ease;display:none}
+  .notif.show{display:block}
+  .notif-title{font-size:13px;font-weight:600}
+  .notif-msg{font-size:12px;color:var(--text2);margin-top:4px}
+  @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .spin{animation:spin 1s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .info-row{display:flex;gap:8px;margin-bottom:6px;font-size:13px}
+  .info-lbl{color:var(--text3);min-width:160px}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+  .svc-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .svc-row:last-child{border-bottom:none}
+  .tag-input-wrap{display:flex;gap:8px}
+  .tag-input-wrap input{flex:1}
+  #scan-results{margin-top:12px}
+  .scan-host{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .scan-host:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<div class="taskbar">
+  <div class="tb-left">
+    <svg width="20" height="20" viewBox="0 0 20 20">
+      <rect x="0" y="0" width="9.5" height="9.5" fill="#F35325"/>
+      <rect x="10.5" y="0" width="9.5" height="9.5" fill="#81BC06"/>
+      <rect x="0" y="10.5" width="9.5" height="9.5" fill="#05A6F0"/>
+      <rect x="10.5" y="10.5" width="9.5" height="9.5" fill="#FFBA08"/>
+    </svg>
+    <span class="tb-title">IT Support Center</span>
+    <span style="font-size:11px;color:rgba(255,255,255,.5);margin-left:8px" id="conn-status">
+      <span class="conn-dot" id="conn-dot"></span><span id="conn-text">Verbinde...</span>
+    </span>
+  </div>
+  <div class="tb-right">
+    <span>🔔</span>
+    <div class="tb-time">
+      <span id="clk-t" style="color:#fff;font-size:12px">00:00</span>
+      <span id="clk-d" style="color:rgba(255,255,255,.7);font-size:10px">Mo, 1. Jan</span>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-av">IT</div>
+      <div>
+        <div class="sb-user-name">IT Admin</div>
+        <div class="sb-user-role" id="sb-hostname">Support Techniker</div>
+      </div>
+    </div>
+    <div class="nav-lbl">Hauptmenü</div>
+    <div class="nav active" onclick="go('dashboard',this)"><span class="nav-ico">🏠</span>Dashboard</div>
+    <div class="nav" onclick="go('tickets',this)"><span class="nav-ico">🎫</span>Tickets<span class="badge r" id="badge-tickets">…</span></div>
+    <div class="nav" onclick="go('devices',this)"><span class="nav-ico">💻</span>Geräte</div>
+    <div class="nav" onclick="go('users',this)"><span class="nav-ico">👥</span>Benutzer</div>
+    <div class="sep"></div>
+    <div class="nav-lbl">Tools</div>
+    <div class="nav" onclick="go('diag',this)"><span class="nav-ico">🔧</span>Diagnose</div>
+    <div class="nav" onclick="go('remote',this)"><span class="nav-ico">🖥️</span>Fernzugriff</div>
+    <div class="nav" onclick="go('kb',this)"><span class="nav-ico">📚</span>Wissensbasis</div>
+    <div class="sep"></div>
+    <div class="nav-lbl">System</div>
+    <div class="nav" onclick="go('alerts',this)"><span class="nav-ico">⚠️</span>Warnungen</div>
+    <div class="nav" onclick="go('settings',this)"><span class="nav-ico">⚙️</span>Einstellungen</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard" class="page active">
+      <div class="pg-title">Dashboard</div>
+      <div class="pg-sub">Live-Systemstatus dieses PCs</div>
+      <div class="g4">
+        <div class="card">
+          <div class="card-title">Offene Tickets</div>
+          <div class="stat-val" id="d-tickets" style="color:var(--accent)">…</div>
+          <div class="stat-sub">in der Datenbank</div>
+        </div>
+        <div class="card">
+          <div class="card-title">CPU-Last</div>
+          <div class="stat-val" id="d-cpu">…</div>
+          <div class="stat-sub" id="d-cpu-sub">wird geladen</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Arbeitsspeicher</div>
+          <div class="stat-val" id="d-ram">…</div>
+          <div class="stat-sub" id="d-ram-sub">wird geladen</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Festplatte</div>
+          <div class="stat-val" id="d-disk">…</div>
+          <div class="stat-sub" id="d-disk-sub">wird geladen</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div>
+          <div class="sec-hdr"><div class="sec-title">Aktuelle Tickets</div><button class="btn sec" onclick="go('tickets',null)">Alle →</button></div>
+          <div id="d-ticket-list" class="ticket-list"><div style="color:var(--text3);padding:10px">Lädt…</div></div>
+        </div>
+        <div>
+          <div class="sec-hdr"><div class="sec-title">Live-Systemauslastung</div>
+            <button class="btn sec sm" onclick="loadStats()">⟳</button>
+          </div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-title">CPU</div>
+            <div id="dash-cpu-val" style="font-size:22px;font-weight:600">…</div>
+            <div class="pb"><div class="pb-fill" id="dash-cpu-bar" style="width:0%;background:var(--green)"></div></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px" id="dash-cpu-info">–</div>
+          </div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-title">RAM</div>
+            <div id="dash-ram-val" style="font-size:22px;font-weight:600">…</div>
+            <div class="pb"><div class="pb-fill" id="dash-ram-bar" style="width:0%;background:#F7B900"></div></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px" id="dash-ram-info">–</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Festplatte</div>
+            <div id="dash-disk-val" style="font-size:22px;font-weight:600">…</div>
+            <div class="pb"><div class="pb-fill" id="dash-disk-bar" style="width:0%;background:var(--accent)"></div></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px" id="dash-disk-info">–</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TICKETS -->
+    <div id="pg-tickets" class="page">
+      <div class="pg-title">Ticket-System</div>
+      <div class="pg-sub">Echte Daten aus SQLite-Datenbank</div>
+      <div class="toolbar">
+        <div class="searchbox"><span>🔍</span><input type="text" id="ticket-search" placeholder="Tickets suchen..." oninput="filterTickets()"></div>
+        <button class="btn" onclick="openNewTicket()">+ Neues Ticket</button>
+        <button class="btn sec" onclick="loadTickets()">⟳ Aktualisieren</button>
+      </div>
+      <div class="tab-bar" id="ticket-tabs">
+        <div class="tab active" onclick="setTicketFilter('',this)">Alle</div>
+        <div class="tab" onclick="setTicketFilter('Offen',this)">Offen</div>
+        <div class="tab" onclick="setTicketFilter('In Bearbeitung',this)">In Bearbeitung</div>
+        <div class="tab" onclick="setTicketFilter('Gelöst',this)">Gelöst</div>
+      </div>
+      <div id="ticket-list" class="ticket-list"><div style="color:var(--text3);padding:10px">Lädt…</div></div>
+    </div>
+
+    <!-- DEVICES -->
+    <div id="pg-devices" class="page">
+      <div class="pg-title">Geräteverwaltung</div>
+      <div class="pg-sub">Echter lokaler Netzwerk-Scan</div>
+      <div class="toolbar">
+        <button class="btn" onclick="startScan()" id="scan-btn">🔍 Netzwerk scannen</button>
+        <span style="font-size:12px;color:var(--text3)" id="scan-info">Scannt 192.168.x.0/24 (IP1–50)</span>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">Gefundene Hosts</div>
+          <div id="scan-results" style="color:var(--text3);font-size:13px">Noch kein Scan durchgeführt.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Systeminfo dieses PCs</div>
+          <div id="sysinfo-display" style="color:var(--text3);font-size:13px">
+            <button class="btn sec" onclick="loadSysinfo()">Systeminformationen laden</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="pg-users" class="page">
+      <div class="pg-title">Benutzerverwaltung</div>
+      <div class="pg-sub">Verwaltung lokaler Benutzer (Demo-Daten)</div>
+      <div class="toolbar">
+        <div class="searchbox"><span>🔍</span><input type="text" placeholder="Benutzer suchen..."></div>
+        <button class="btn" onclick="toast('Benutzer erstellen','Formular wird geöffnet...')">+ Neuer Benutzer</button>
+      </div>
+      <div class="card" id="user-list">
+        <div class="user-row">
+          <div class="u-av" style="background:#0067C0">AS</div>
+          <div class="u-info"><div class="u-name">Anna Schmidt</div><div class="u-sub">a.schmidt@firma.de · Vertrieb · Admin</div></div>
+          <span class="stag so" style="margin-right:4px">Aktiv</span>
+          <div class="u-acts">
+            <button class="ico-btn" title="Passwort zurücksetzen" onclick="toast('Passwort zurückgesetzt','Temporäres Passwort gesendet.')">🔑</button>
+            <button class="ico-btn" title="Bearbeiten" onclick="toast('Bearbeiten','a.schmidt wird bearbeitet...')">✏️</button>
+            <button class="ico-btn" title="Sperren" onclick="toast('Konto gesperrt','Anna Schmidt wurde gesperrt.')">🔒</button>
+          </div>
+        </div>
+        <div class="user-row">
+          <div class="u-av" style="background:#107C10">KM</div>
+          <div class="u-info"><div class="u-name">Klaus Müller</div><div class="u-sub">k.mueller@firma.de · Buchhaltung · Benutzer</div></div>
+          <span class="stag sp" style="margin-right:4px">Gesperrt</span>
+          <div class="u-acts">
+            <button class="ico-btn" onclick="toast('Konto entsperrt','Klaus Müller kann sich wieder anmelden.')">🔓</button>
+            <button class="ico-btn" onclick="toast('Bearbeiten','k.mueller wird bearbeitet...')">✏️</button>
+            <button class="ico-btn" onclick="toast('Konto gelöscht','Klaus Müller wurde entfernt.')">🗑️</button>
+          </div>
+        </div>
+        <div class="user-row">
+          <div class="u-av" style="background:#C42B1C">JW</div>
+          <div class="u-info"><div class="u-name">Jana Weber</div><div class="u-sub">j.weber@firma.de · IT · Techniker</div></div>
+          <span class="stag so" style="margin-right:4px">Aktiv</span>
+          <div class="u-acts">
+            <button class="ico-btn" onclick="toast('Passwort zurückgesetzt','j.weber: Passwort gesendet.')">🔑</button>
+            <button class="ico-btn" onclick="toast('Bearbeiten','j.weber wird bearbeitet...')">✏️</button>
+            <button class="ico-btn" onclick="toast('Konto gesperrt','Jana Weber wurde gesperrt.')">🔒</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAGNOSE -->
+    <div id="pg-diag" class="page">
+      <div class="pg-title">Diagnose-Tools</div>
+      <div class="pg-sub">Echter Ping, DNS, Systeminfo und Windows-Dienste</div>
+      <div class="g2">
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Ping-Test</div>
+          <div class="form-row">
+            <label class="form-lbl">Zieladresse</label>
+            <input class="fi" id="ping-t" value="8.8.8.8" placeholder="IP oder Hostname">
+          </div>
+          <button class="btn" onclick="doPing()" id="ping-btn">▶ Ping starten</button>
+          <div id="ping-out" class="cmd" style="margin-top:14px;min-height:80px;display:none"></div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">DNS-Auflösung</div>
+          <div class="form-row">
+            <label class="form-lbl">Hostname</label>
+            <input class="fi" id="dns-t" value="google.com" placeholder="z.B. server.intern">
+          </div>
+          <button class="btn" onclick="doDNS()" id="dns-btn">▶ Auflösen</button>
+          <div id="dns-out" class="cmd" style="margin-top:14px;min-height:80px;display:none"></div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Befehle ausführen</div>
+          <div class="form-row">
+            <label class="form-lbl">Befehl</label>
+            <select class="fs" id="exec-cmd">
+              <option value="ipconfig">ipconfig /all</option>
+              <option value="netstat">netstat -an</option>
+              <option value="arp">arp -a</option>
+              <option value="route">route print</option>
+              <option value="tasklist">tasklist</option>
+              <option value="systeminfo">systeminfo</option>
+            </select>
+          </div>
+          <button class="btn" onclick="doExec()" id="exec-btn">▶ Ausführen</button>
+          <div id="exec-out" class="cmd" style="margin-top:14px;min-height:80px;display:none"></div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Windows-Dienste</div>
+          <button class="btn sec" onclick="loadServices()" id="svc-btn">▶ Dienste laden</button>
+          <div id="svc-out" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMOTE -->
+    <div id="pg-remote" class="page">
+      <div class="pg-title">Fernzugriff</div>
+      <div class="pg-sub">RDP-Verbindungen starten (öffnet mstsc.exe auf Windows)</div>
+      <div class="g2">
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Schnellverbindung</div>
+          <div class="form-row">
+            <label class="form-lbl">Computername oder IP</label>
+            <input class="fi" id="rdp-target" placeholder="z.B. 192.168.1.101">
+          </div>
+          <div class="form-row">
+            <label class="form-lbl">Typ</label>
+            <select class="fs">
+              <option>RDP (mstsc)</option><option>SSH (Befehlszeile)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-lbl">Benutzername</label>
+            <input class="fi" value="Administrator">
+          </div>
+          <button class="btn" onclick="startRDP()">🖥️ Verbinden</button>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Gespeicherte Verbindungen</div>
+          <div class="dev-item">
+            <div class="dev-ic">🖥️</div>
+            <div class="dev-info"><div class="dev-name">PC-VERTRIEB-01</div><div class="dev-sub">RDP · 192.168.1.101</div></div>
+            <button class="btn sm" onclick="quickRDP('192.168.1.101')">Verbinden</button>
+          </div>
+          <div class="dev-item">
+            <div class="dev-ic">💻</div>
+            <div class="dev-info"><div class="dev-name">LAPTOP-MGT-07</div><div class="dev-sub">RDP · 192.168.1.145</div></div>
+            <button class="btn sm" onclick="quickRDP('192.168.1.145')">Verbinden</button>
+          </div>
+          <div class="dev-item">
+            <div class="dev-ic">🗄️</div>
+            <div class="dev-info"><div class="dev-name">SRV-MAIN</div><div class="dev-sub">RDP · 10.0.0.1</div></div>
+            <button class="btn sm" onclick="quickRDP('10.0.0.1')">Verbinden</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KB -->
+    <div id="pg-kb" class="page">
+      <div class="pg-title">Wissensbasis</div>
+      <div class="pg-sub">Artikel aus Datenbank – bearbeitbar und speicherbar</div>
+      <div class="toolbar">
+        <div class="searchbox"><span>🔍</span><input type="text" id="kb-search" placeholder="Suchen..." oninput="filterKB()"></div>
+        <button class="btn" onclick="openNewKB()">+ Neuer Artikel</button>
+        <button class="btn sec" onclick="loadKB()">⟳</button>
+      </div>
+      <div id="kb-list"><div style="color:var(--text3);padding:10px">Lädt…</div></div>
+    </div>
+
+    <!-- ALERTS -->
+    <div id="pg-alerts" class="page">
+      <div class="pg-title">Systemwarnungen</div>
+      <div class="pg-sub">Automatisch generiert aus Live-Systemdaten</div>
+      <div class="toolbar">
+        <button class="btn sec" onclick="checkAlerts()">🔄 Aktualisieren</button>
+      </div>
+      <div id="alerts-list"><div style="color:var(--text3);padding:10px">Analysiere System…</div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="pg-settings" class="page">
+      <div class="pg-title">Einstellungen</div>
+      <div class="pg-sub">Backend-Verbindung und Konfiguration</div>
+      <div class="g2">
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Backend-Status</div>
+          <div id="settings-sysinfo" style="font-size:13px;color:var(--text3)">Lädt…</div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sec" onclick="checkConnection()">Verbindung testen</button>
+            <button class="btn sec" onclick="loadSysinfo()">Systeminfo</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px">Datenbank</div>
+          <div class="form-row">
+            <label class="form-lbl">Datenbankdatei</label>
+            <input class="fi" value="itsupport.db" readonly>
+          </div>
+          <div class="info-row"><span class="info-lbl">Ticket-Anzahl</span><span id="db-ticket-count">…</span></div>
+          <div class="info-row"><span class="info-lbl">KB-Artikel</span><span id="db-kb-count">…</span></div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn sec" onclick="loadDBStats()">Statistik laden</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Ticket Modal -->
+<div class="modal-bg" id="ticket-modal">
+  <div class="modal">
+    <div class="modal-title" id="ticket-modal-title">Neues Ticket</div>
+    <input type="hidden" id="ticket-modal-id">
+    <div class="form-row"><label class="form-lbl">Titel</label><input class="fi" id="tm-title" placeholder="Kurze Problembeschreibung"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-row"><label class="form-lbl">Benutzer</label><input class="fi" id="tm-user" placeholder="Name oder E-Mail"></div>
+      <div class="form-row"><label class="form-lbl">Kategorie</label>
+        <select class="fs" id="tm-cat"><option>Hardware</option><option>Software</option><option>Netzwerk</option><option>Passwort</option><option>Drucker</option><option>Sonstiges</option></select>
+      </div>
+      <div class="form-row"><label class="form-lbl">Priorität</label>
+        <select class="fs" id="tm-prio"><option>Niedrig</option><option selected>Mittel</option><option>Hoch</option><option>Kritisch</option></select>
+      </div>
+      <div class="form-row"><label class="form-lbl">Status</label>
+        <select class="fs" id="tm-status"><option>Offen</option><option>In Bearbeitung</option><option>Gelöst</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label class="form-lbl">Beschreibung</label><textarea class="fta" id="tm-desc" placeholder="Details..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn sec" onclick="closeModal('ticket-modal')">Abbrechen</button>
+      <button class="btn" onclick="saveTicket()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- KB Modal -->
+<div class="modal-bg" id="kb-modal">
+  <div class="modal">
+    <div class="modal-title">Neuer KB-Artikel</div>
+    <div class="form-row"><label class="form-lbl">Titel</label><input class="fi" id="kb-title" placeholder="Artikeltitel"></div>
+    <div class="form-row"><label class="form-lbl">Kategorie</label>
+      <select class="fs" id="kb-cat"><option>Netzwerk</option><option>Windows</option><option>Drucker</option><option>E-Mail</option><option>Hardware</option><option>Allgemein</option></select>
+    </div>
+    <div class="form-row"><label class="form-lbl">Inhalt</label><textarea class="fta" style="min-height:120px" id="kb-content" placeholder="Schritt-für-Schritt-Anleitung..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn sec" onclick="closeModal('kb-modal')">Abbrechen</button>
+      <button class="btn" onclick="saveKB()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div id="notif" class="notif">
+  <div id="notif-title" class="notif-title"></div>
+  <div id="notif-msg" class="notif-msg"></div>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let allTickets = [];
+let allKB = [];
+let ticketFilter = '';
+let sysStats = null;
+
+// ── Navigation ──
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
+  document.getElementById('pg-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.nav').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+  });
+  // lazy-load
+  if (id === 'tickets') loadTickets();
+  if (id === 'kb') loadKB();
+  if (id === 'dashboard') { loadStats(); loadDashTickets(); }
+  if (id === 'alerts') checkAlerts();
+  if (id === 'settings') { loadSettingsSysinfo(); loadDBStats(); }
+}
+
+// ── Clock ──
+function tick() {
+  const n = new Date();
+  document.getElementById('clk-t').textContent = n.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('clk-d').textContent = n.toLocaleDateString('de-DE', {weekday:'short',day:'numeric',month:'short'});
+}
+tick(); setInterval(tick, 20000);
+
+// ── Connection check ──
+async function checkConnection() {
+  try {
+    const r = await fetch(API + '/stats', {signal: AbortSignal.timeout(3000)});
+    if (r.ok) {
+      document.getElementById('conn-dot').classList.add('ok');
+      document.getElementById('conn-dot').classList.remove('err');
+      document.getElementById('conn-text').textContent = 'Verbunden';
+      toast('Verbindung OK', 'Backend läuft auf localhost:5000');
+    }
+  } catch {
+    document.getElementById('conn-dot').classList.add('err');
+    document.getElementById('conn-dot').classList.remove('ok');
+    document.getElementById('conn-text').textContent = 'Kein Backend';
+    toast('Nicht verbunden', 'Starte server.py und lade die Seite neu.');
+  }
+}
+checkConnection();
+
+// ── Stats ──
+async function loadStats() {
+  try {
+    const r = await fetch(API + '/stats');
+    sysStats = await r.json();
+    const cpu = sysStats.cpu, ram = sysStats.ram, disk = sysStats.disk;
+    const cpuColor = cpu > 80 ? 'var(--red)' : cpu > 60 ? '#F7B900' : 'var(--green)';
+    const ramColor = ram > 80 ? 'var(--red)' : ram > 60 ? '#F7B900' : 'var(--green)';
+
+    document.getElementById('d-cpu').textContent = cpu + '%';
+    document.getElementById('d-cpu').style.color = cpuColor;
+    document.getElementById('d-cpu-sub').textContent = 'Prozessor';
+    document.getElementById('d-ram').textContent = ram + '%';
+    document.getElementById('d-ram').style.color = ramColor;
+    document.getElementById('d-ram-sub').textContent = sysStats.ram_used + ' / ' + sysStats.ram_total + ' GB';
+    document.getElementById('d-disk').textContent = disk + '%';
+    document.getElementById('d-disk').style.color = disk > 85 ? 'var(--red)' : 'var(--accent)';
+    document.getElementById('d-disk-sub').textContent = sysStats.disk_used + ' / ' + sysStats.disk_total + ' GB';
+
+    document.getElementById('dash-cpu-val').textContent = cpu + '%';
+    document.getElementById('dash-cpu-val').style.color = cpuColor;
+    document.getElementById('dash-cpu-bar').style.width = cpu + '%';
+    document.getElementById('dash-cpu-bar').style.background = cpuColor;
+    document.getElementById('dash-cpu-info').textContent = 'Auslastung in Echtzeit';
+
+    document.getElementById('dash-ram-val').textContent = ram + '%';
+    document.getElementById('dash-ram-bar').style.width = ram + '%';
+    document.getElementById('dash-ram-info').textContent = sysStats.ram_used + ' GB / ' + sysStats.ram_total + ' GB genutzt';
+
+    document.getElementById('dash-disk-val').textContent = disk + '%';
+    document.getElementById('dash-disk-bar').style.width = disk + '%';
+    document.getElementById('dash-disk-info').textContent = sysStats.disk_used + ' GB / ' + sysStats.disk_total + ' GB genutzt';
+  } catch(e) {
+    document.getElementById('d-cpu').textContent = '–';
+    document.getElementById('d-ram').textContent = '–';
+    document.getElementById('d-disk').textContent = '–';
+  }
+}
+
+// ── Tickets ──
+async function loadTickets() {
+  try {
+    const r = await fetch(API + '/tickets');
+    allTickets = await r.json();
+    const open = allTickets.filter(t => t.status === 'Offen').length;
+    document.getElementById('badge-tickets').textContent = open;
+    document.getElementById('d-tickets').textContent = open;
+    renderTickets();
+  } catch { document.getElementById('ticket-list').innerHTML = '<div style="color:var(--red);padding:10px">Backend nicht erreichbar. Starte server.py!</div>'; }
+}
+async function loadDashTickets() {
+  await loadTickets();
+  const list = document.getElementById('d-ticket-list');
+  const recent = allTickets.slice(0, 4);
+  if (!recent.length) { list.innerHTML = '<div style="color:var(--text3);padding:8px">Keine Tickets.</div>'; return; }
+  const cats = {Hardware:'🖥️',Software:'💾',Netzwerk:'📶',Passwort:'🔐',Drucker:'🖨️',Sonstiges:'📋'};
+  list.innerHTML = recent.map(t => `
+    <div class="ticket" onclick="editTicket(${t.id})">
+      <div class="t-ico">${cats[t.category]||'📋'}</div>
+      <div class="t-body"><div class="t-title">${esc(t.title)}</div><div class="t-meta">${esc(t.user||'–')} · ${fmtDate(t.created)}</div></div>
+      <span class="prio ${prioCls(t.priority)}">${esc(t.priority)}</span>
+    </div>`).join('');
+}
+function renderTickets() {
+  const q = (document.getElementById('ticket-search')?.value||'').toLowerCase();
+  const cats = {Hardware:'🖥️',Software:'💾',Netzwerk:'📶',Passwort:'🔐',Drucker:'🖨️',Sonstiges:'📋'};
+  let list = allTickets.filter(t =>
+    (!ticketFilter || t.status === ticketFilter) &&
+    (!q || t.title.toLowerCase().includes(q) || (t.user||'').toLowerCase().includes(q))
+  );
+  if (!list.length) { document.getElementById('ticket-list').innerHTML = '<div style="color:var(--text3);padding:10px">Keine Tickets gefunden.</div>'; return; }
+  document.getElementById('ticket-list').innerHTML = list.map(t => `
+    <div class="ticket" onclick="editTicket(${t.id})">
+      <div class="t-ico">${cats[t.category]||'📋'}</div>
+      <div class="t-body"><div class="t-title">${esc(t.title)}</div><div class="t-meta">#${t.id} · ${esc(t.user||'–')} · ${fmtDate(t.created)}</div></div>
+      <span class="prio ${prioCls(t.priority)}">${esc(t.priority)}</span>
+      <span class="stag ${statusCls(t.status)}">${esc(t.status)}</span>
+      <button class="ico-btn" onclick="event.stopPropagation();deleteTicket(${t.id})" title="Löschen">🗑️</button>
+    </div>`).join('');
+}
+function filterTickets() { renderTickets(); }
+function setTicketFilter(f, el) {
+  ticketFilter = f;
+  document.querySelectorAll('#ticket-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTickets();
+}
+function openNewTicket() {
+  document.getElementById('ticket-modal-title').textContent = 'Neues Ticket';
+  document.getElementById('ticket-modal-id').value = '';
+  ['tm-title','tm-user','tm-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tm-prio').value = 'Mittel';
+  document.getElementById('tm-status').value = 'Offen';
+  document.getElementById('ticket-modal').classList.add('show');
+}
+function editTicket(id) {
+  const t = allTickets.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('ticket-modal-title').textContent = 'Ticket #' + id + ' bearbeiten';
+  document.getElementById('ticket-modal-id').value = id;
+  document.getElementById('tm-title').value = t.title;
+  document.getElementById('tm-user').value = t.user || '';
+  document.getElementById('tm-cat').value = t.category || 'Sonstiges';
+  document.getElementById('tm-prio').value = t.priority || 'Mittel';
+  document.getElementById('tm-status').value = t.status || 'Offen';
+  document.getElementById('tm-desc').value = t.description || '';
+  document.getElementById('ticket-modal').classList.add('show');
+}
+async function saveTicket() {
+  const id = document.getElementById('ticket-modal-id').value;
+  const data = {
+    title: document.getElementById('tm-title').value,
+    user: document.getElementById('tm-user').value,
+    category: document.getElementById('tm-cat').value,
+    priority: document.getElementById('tm-prio').value,
+    status: document.getElementById('tm-status').value,
+    description: document.getElementById('tm-desc').value,
+  };
+  if (!data.title) { toast('Fehler','Titel ist Pflichtfeld.'); return; }
+  try {
+    if (id) {
+      await fetch(API + '/tickets/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+      toast('Gespeichert','Ticket #' + id + ' aktualisiert.');
+    } else {
+      const r = await fetch(API + '/tickets', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+      const res = await r.json();
+      toast('Erstellt','Ticket #' + res.id + ' angelegt.');
+    }
+    closeModal('ticket-modal');
+    loadTickets();
+  } catch { toast('Fehler','Speichern fehlgeschlagen.'); }
+}
+async function deleteTicket(id) {
+  if (!confirm('Ticket #' + id + ' wirklich löschen?')) return;
+  await fetch(API + '/tickets/' + id, {method:'DELETE'});
+  toast('Gelöscht','Ticket #' + id + ' wurde entfernt.');
+  loadTickets();
+}
+
+// ── KB ──
+async function loadKB() {
+  try {
+    const r = await fetch(API + '/kb');
+    allKB = await r.json();
+    renderKB();
+  } catch { document.getElementById('kb-list').innerHTML = '<div style="color:var(--red);padding:10px">Backend nicht erreichbar.</div>'; }
+}
+function renderKB() {
+  const q = (document.getElementById('kb-search')?.value||'').toLowerCase();
+  const list = allKB.filter(a => !q || a.title.toLowerCase().includes(q) || (a.category||'').toLowerCase().includes(q));
+  if (!list.length) { document.getElementById('kb-list').innerHTML = '<div style="color:var(--text3);padding:10px">Keine Artikel.</div>'; return; }
+  document.getElementById('kb-list').innerHTML = list.map(a => `
+    <div class="kb-item">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="font-size:15px">📄</span>
+        <span style="font-size:14px;font-weight:500;color:var(--text)">${esc(a.title)}</span>
+        <span class="kb-tag">${esc(a.category||'Allgemein')}</span>
+        <button class="ico-btn" style="margin-left:auto" onclick="deleteKBItem(${a.id})" title="Löschen">🗑️</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);white-space:pre-wrap">${esc(a.content||'').substring(0,200)}${(a.content||'').length>200?'…':''}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Erstellt: ${fmtDate(a.created)}</div>
+    </div>`).join('');
+}
+function filterKB() { renderKB(); }
+function openNewKB() { ['kb-title','kb-content'].forEach(id=>document.getElementById(id).value=''); document.getElementById('kb-modal').classList.add('show'); }
+async function saveKB() {
+  const data = { title: document.getElementById('kb-title').value, category: document.getElementById('kb-cat').value, content: document.getElementById('kb-content').value };
+  if (!data.title) { toast('Fehler','Titel fehlt.'); return; }
+  await fetch(API + '/kb', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+  toast('Gespeichert','Artikel wurde erstellt.');
+  closeModal('kb-modal'); loadKB();
+}
+async function deleteKBItem(id) {
+  if (!confirm('Artikel löschen?')) return;
+  await fetch(API + '/kb/' + id, {method:'DELETE'});
+  toast('Gelöscht','Artikel wurde entfernt.'); loadKB();
+}
+
+// ── Diagnose ──
+async function doPing() {
+  const t = document.getElementById('ping-t').value;
+  const btn = document.getElementById('ping-btn');
+  const out = document.getElementById('ping-out');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Läuft…';
+  out.style.display = 'block';
+  out.innerHTML = `<span class="c-prompt">C:\\> ping ${t} -n 4</span>\n<span class="c-out">Warte auf Antwort…</span>`;
+  try {
+    const r = await fetch(API + '/ping', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target:t})});
+    const data = await r.json();
+    out.innerHTML = `<span class="c-prompt">C:\\> ping ${t}</span>\n<span class="${data.success?'c-ok':'c-err'}">${esc(data.output)}</span>`;
+  } catch { out.innerHTML = '<span class="c-err">Backend nicht erreichbar.</span>'; }
+  btn.disabled = false; btn.textContent = '▶ Ping starten';
+}
+async function doDNS() {
+  const t = document.getElementById('dns-t').value;
+  const btn = document.getElementById('dns-btn');
+  const out = document.getElementById('dns-out');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Läuft…';
+  out.style.display = 'block';
+  out.innerHTML = `<span class="c-prompt">C:\\> nslookup ${t}</span>\n<span class="c-out">Auflösung läuft…</span>`;
+  try {
+    const r = await fetch(API + '/dns', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target:t})});
+    const data = await r.json();
+    out.innerHTML = `<span class="c-prompt">C:\\> nslookup ${t}</span>\n<span class="${data.success?'c-ok':'c-err'}">${esc(data.output)}</span>`;
+  } catch { out.innerHTML = '<span class="c-err">Backend nicht erreichbar.</span>'; }
+  btn.disabled = false; btn.textContent = '▶ Auflösen';
+}
+async function doExec() {
+  const cmd = document.getElementById('exec-cmd').value;
+  const btn = document.getElementById('exec-btn');
+  const out = document.getElementById('exec-out');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Läuft…';
+  out.style.display = 'block';
+  out.innerHTML = `<span class="c-prompt">C:\\> ${cmd}</span>\n<span class="c-out">Wird ausgeführt…</span>`;
+  try {
+    const r = await fetch(API + '/exec', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({command:cmd})});
+    const data = await r.json();
+    out.innerHTML = `<span class="c-prompt">C:\\> ${cmd}</span>\n<span class="${data.success?'c-ok':'c-err'}">${esc(data.output)}</span>`;
+  } catch { out.innerHTML = '<span class="c-err">Backend nicht erreichbar.</span>'; }
+  btn.disabled = false; btn.textContent = '▶ Ausführen';
+}
+async function loadServices() {
+  const btn = document.getElementById('svc-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Lädt…';
+  try {
+    const r = await fetch(API + '/services');
+    const svcs = await r.json();
+    document.getElementById('svc-out').innerHTML = svcs.map(s => `
+      <div class="svc-row">
+        <span class="dot ${s.running?'dot-on':'dot-off'}"></span>
+        <span style="flex:1">${esc(s.name||s.DisplayName||'')}</span>
+        <span style="color:${s.running?'var(--green)':'var(--red)'};font-size:12px">${s.running?'Läuft':'Gestoppt'}</span>
+        ${!s.running?`<button class="btn sm" onclick="startSvc('${esc(s.name||'')}')">Starten</button>`:''}
+      </div>`).join('');
+  } catch { document.getElementById('svc-out').innerHTML = '<span style="color:var(--red)">Backend nicht erreichbar.</span>'; }
+  btn.disabled = false; btn.textContent = '▶ Dienste laden';
+}
+async function startSvc(name) {
+  toast('Starte Dienst…', name);
+  const r = await fetch(API + '/services/start', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+  const data = await r.json();
+  toast(data.success?'Gestartet':'Fehler', data.message);
+  loadServices();
+}
+
+// ── Sysinfo ──
+async function loadSysinfo() {
+  try {
+    const r = await fetch(API + '/sysinfo');
+    const d = await r.json();
+    document.getElementById('sb-hostname').textContent = d.hostname || 'IT Admin';
+    const html = `
+      <div class="info-row"><span class="info-lbl">Hostname</span><span>${esc(d.hostname||'')}</span></div>
+      <div class="info-row"><span class="info-lbl">Betriebssystem</span><span>${esc(d.os||'')}</span></div>
+      <div class="info-row"><span class="info-lbl">Prozessor</span><span>${esc(d.cpu||'')}</span></div>
+      <div class="info-row"><span class="info-lbl">CPU-Kerne</span><span>${d.cpu_cores||'–'} physisch / ${d.cpu_threads||'–'} logisch</span></div>
+      <div class="info-row"><span class="info-lbl">CPU-Last</span><span>${d.cpu_percent||0}%</span></div>
+      <div class="info-row"><span class="info-lbl">RAM</span><span>${d.ram_total||'–'} GB gesamt</span></div>
+      <div class="info-row"><span class="info-lbl">Festplatte</span><span>${d.disk_used||'–'} / ${d.disk_total||'–'} GB</span></div>
+      <div class="info-row"><span class="info-lbl">Gestartet am</span><span>${esc(d.boot_time||'')}</span></div>
+      <div class="info-row"><span class="info-lbl">Uptime</span><span>${esc(d.uptime||'')}</span></div>
+      ${(d.ip_addresses||[]).map(ip=>`<div class="info-row"><span class="info-lbl">IP-Adresse</span><span>${esc(ip)}</span></div>`).join('')}`;
+    document.getElementById('sysinfo-display').innerHTML = html;
+    document.getElementById('settings-sysinfo').innerHTML = html;
+  } catch { toast('Fehler','Systeminfo konnte nicht geladen werden.'); }
+}
+
+// ── Netzwerk-Scan ──
+async function startScan() {
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Scanne…';
+  document.getElementById('scan-results').innerHTML = '<span style="color:var(--text3)">Scanne Netzwerk (dauert ~15 Sek.)…</span>';
+  try {
+    const r = await fetch(API + '/network/scan');
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    document.getElementById('scan-info').textContent = `Subnetz: ${data.subnet}`;
+    if (!data.hosts.length) { document.getElementById('scan-results').innerHTML = '<span style="color:var(--text3)">Keine Hosts gefunden.</span>'; }
+    else document.getElementById('scan-results').innerHTML = data.hosts.map(h => `
+      <div class="scan-host">
+        <span class="dot dot-on"></span>
+        <span style="font-weight:500;min-width:110px">${esc(h.ip)}</span>
+        <span style="color:var(--text3)">${esc(h.name !== h.ip ? h.name : '')}</span>
+      </div>`).join('') + `<div style="margin-top:8px;font-size:12px;color:var(--text3)">${data.hosts.length} Host(s) gefunden</div>`;
+  } catch(e) { document.getElementById('scan-results').innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`; }
+  btn.disabled = false; btn.textContent = '🔍 Netzwerk scannen';
+}
+
+// ── Remote / RDP ──
+function startRDP() {
+  const target = document.getElementById('rdp-target').value;
+  if (!target) { toast('Kein Ziel', 'Bitte IP oder Hostname eingeben.'); return; }
+  quickRDP(target);
+}
+function quickRDP(target) {
+  toast('RDP wird gestartet', 'mstsc /v:' + target);
+  // Auf Windows: mstsc direkt aufrufen über einen Link
+  const a = document.createElement('a');
+  a.href = 'rdp://full%20address=s:' + encodeURIComponent(target);
+  a.click();
+}
+
+// ── Alerts aus Live-Daten ──
+async function checkAlerts() {
+  document.getElementById('alerts-list').innerHTML = '<div style="color:var(--text3);padding:10px">Analysiere…</div>';
+  try {
+    const r = await fetch(API + '/stats');
+    const d = await r.json();
+    const alerts = [];
+    if (d.cpu > 80) alerts.push({cls:'a-err',ico:'🔴',title:`Hohe CPU-Last: ${d.cpu}%`,msg:'Prozessor stark ausgelastet. Prozesse prüfen.'});
+    else if (d.cpu > 60) alerts.push({cls:'a-warn',ico:'🟡',title:`CPU-Last erhöht: ${d.cpu}%`,msg:'CPU-Auslastung über 60%.'});
+    if (d.ram > 85) alerts.push({cls:'a-err',ico:'🔴',title:`Kritisch wenig RAM: ${d.ram}%`,msg:`${d.ram_used} GB von ${d.ram_total} GB genutzt. Dienste neu starten?`});
+    else if (d.ram > 70) alerts.push({cls:'a-warn',ico:'🟡',title:`Hohe RAM-Auslastung: ${d.ram}%`,msg:`${d.ram_used} GB / ${d.ram_total} GB`});
+    if (d.disk > 90) alerts.push({cls:'a-err',ico:'🔴',title:`Festplatte fast voll: ${d.disk}%`,msg:`${d.disk_used} GB von ${d.disk_total} GB genutzt!`});
+    else if (d.disk > 75) alerts.push({cls:'a-warn',ico:'🟡',title:`Festplatte: ${d.disk}%`,msg:`${d.disk_used} GB / ${d.disk_total} GB genutzt.`});
+    const openTickets = allTickets.filter(t => t.status === 'Offen').length;
+    if (openTickets > 5) alerts.push({cls:'a-warn',ico:'🟡',title:`${openTickets} offene Tickets`,msg:'Viele unbearbeitete Support-Anfragen.'});
+    alerts.push({cls:'a-ok',ico:'🟢',title:'Backend läuft stabil',msg:`Verbindung zu localhost:5000 aktiv. Netzwerk: ↑${d.net_sent} MB ↓${d.net_recv} MB`});
+    if (!alerts.length) alerts.push({cls:'a-ok',ico:'🟢',title:'Alles in Ordnung',msg:'Keine Warnungen festgestellt.'});
+    document.getElementById('alerts-list').innerHTML = alerts.map(a => `
+      <div class="alert-item ${a.cls}">
+        <div class="a-ico">${a.ico}</div>
+        <div><div class="a-title">${esc(a.title)}</div><div class="a-msg">${esc(a.msg)}</div></div>
+      </div>`).join('');
+  } catch {
+    document.getElementById('alerts-list').innerHTML = `<div class="alert-item a-err"><div class="a-ico">🔴</div><div><div class="a-title">Backend nicht erreichbar</div><div class="a-msg">Starte server.py und lade die Seite neu.</div></div></div>`;
+  }
+}
+
+// ── Settings ──
+async function loadSettingsSysinfo() { await loadSysinfo(); }
+async function loadDBStats() {
+  try {
+    const rt = await fetch(API + '/tickets');
+    const rk = await fetch(API + '/kb');
+    const t = await rt.json();
+    const k = await rk.json();
+    document.getElementById('db-ticket-count').textContent = t.length;
+    document.getElementById('db-kb-count').textContent = k.length;
+  } catch {}
+}
+
+// ── Helpers ──
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) {
+  if (!iso) return '–';
+  try { return new Date(iso).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}); }
+  catch { return iso.substring(0,10); }
+}
+function prioCls(p) { return {Hoch:'ph',Mittel:'pm',Niedrig:'pl',Kritisch:'pc'}[p]||'pm'; }
+function statusCls(s) { return {Offen:'so','In Bearbeitung':'sp',Gelöst:'sc'}[s]||'so'; }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+let notifT;
+function toast(title, msg) {
+  const n = document.getElementById('notif');
+  document.getElementById('notif-title').textContent = title;
+  document.getElementById('notif-msg').textContent = msg;
+  n.classList.add('show');
+  clearTimeout(notifT);
+  notifT = setTimeout(() => n.classList.remove('show'), 3500);
+}
+// Close modal on background click
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('show'); }));
+
+// Initial load
+loadStats();
+loadDashTickets();
+setInterval(loadStats, 30000);
+</script>
+</body>
+</html>
